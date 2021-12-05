@@ -10,7 +10,7 @@ import (
 func main() {
 	hight := -1
 	seats := make(map[int]position)
-	for _, sr := range utils.Load("05-real").ToStringSlice() {
+	for _, sr := range utils.Load(2020, "05-real").ToStringSlice() {
 		p := splitName(sr)
 		p.getRow()
 		p.getSeat()

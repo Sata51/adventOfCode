@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	input := utils.Load("real").String()
+	input := utils.Load(2020, "20-real").String()
 
 	fmt.Println("-----Part 1-----")
 	fmt.Println("Product of corner tile: ", part1(input))

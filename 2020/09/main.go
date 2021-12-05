@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	data := parse(utils.Load("09-real").ToStringSlice())
+	data := parse(utils.Load(2020, "09-real").ToStringSlice())
 	// fmt.Println(data)
 
 	incorrect := foundError(5, data)

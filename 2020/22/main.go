@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	input := utils.Load("real").String()
+	input := utils.Load(2020, "22-real").String()
 
 	fmt.Println("-----Part 1-----")
 	fmt.Println("Result:", part1(input))

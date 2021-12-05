@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	input := utils.Load("real").ToIntSlice()
+	input := utils.Load(2020, "25-real").ToIntSlice()
 
 	fmt.Println("-----Part 1-----")
 	fmt.Println("Result: ", Part1(input[0], input[1]))

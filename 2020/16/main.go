@@ -23,7 +23,7 @@ type ticket struct {
 }
 
 func main() {
-	data := utils.Load("real")
+	data := utils.Load(2020, "16-real")
 	fields, myTicket, nearbyTickets := parseInput(data.String())
 
 	fmt.Println("step1", step1(nearbyTickets, fields))

@@ -11,7 +11,7 @@ import (
 var r *regexp.Regexp = regexp.MustCompile("[^\\s]+")
 
 func main() {
-	dt := utils.Load("04-real")
+	dt := utils.Load(2021, "04-real")
 
 	input := dt.ToStringSlice()
 

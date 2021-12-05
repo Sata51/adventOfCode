@@ -54,7 +54,7 @@ func (b *boat) String() string {
 }
 
 func main() {
-	instructions := parse(utils.Load("12-real").ToStringSlice())
+	instructions := parse(utils.Load(2020, "12-real").ToStringSlice())
 	fmt.Println(instructions)
 
 	b := newBoat()

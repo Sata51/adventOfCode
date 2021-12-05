@@ -16,7 +16,7 @@ type Rule struct {
 }
 
 func main() {
-	input := utils.Load("real")
+	input := utils.Load(2020, "19-real")
 
 	fmt.Println("-----Part 1-----")
 	fmt.Println("Result: ", part1(input.String()))

@@ -12,7 +12,7 @@ var store = make(map[string]map[string]int)
 var lookFor = "shiny gold"
 
 func main() {
-	parse(utils.Load("07-real").ToStringSlice())
+	parse(utils.Load(2020, "07-real").ToStringSlice())
 
 	result := make(map[string]struct{})
 

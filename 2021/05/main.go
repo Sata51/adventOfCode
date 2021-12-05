@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	dt := utils.Load("05-real")
+	dt := utils.Load(2021, "05-real")
 	input := dt.ToStringSlice()
 
 	moves := parseInput(input)

@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	raw := utils.Load("01-real")
+	raw := utils.Load(2020, "01-real")
 	input := raw.ToIntSlice()
 	fmt.Printf("%d\n", getData(input))
 

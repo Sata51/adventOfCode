@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	dt := utils.Load("02-real")
+	dt := utils.Load(2021, "02-real")
 	instructionsStr := dt.ToStringSlice()
 	instructions := make([]Instruction, 0)
 	for _, s := range instructionsStr {

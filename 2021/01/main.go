@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	dt := utils.Load("01-real")
+	dt := utils.Load(2021, "01-real")
 	numbers := dt.ToIntSlice()
 
 	part1(numbers)

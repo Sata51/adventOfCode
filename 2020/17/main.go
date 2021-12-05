@@ -35,7 +35,7 @@ func newPocketDimension(input []string, dimensions int) pocketDimension {
 }
 
 func main() {
-	input := utils.Load("real").ToStringSlice()
+	input := utils.Load(2020, "17-real").ToStringSlice()
 
 	fmt.Println("----------------Part 1----------------")
 	pd3 := newPocketDimension(input, 3)

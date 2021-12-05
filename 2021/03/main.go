@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	dt := utils.Load("03-real")
+	dt := utils.Load(2021, "03-real")
 	strInputs := dt.ToStringSlice()
 
 	part1(strInputs)

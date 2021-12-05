@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	data := utils.Load("10-real")
+	data := utils.Load(2020, "10-real")
 	input := data.ToIntSlice()
 
 	sort.Ints(input)

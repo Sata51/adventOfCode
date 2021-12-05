@@ -22,7 +22,7 @@ type passport struct {
 }
 
 func main() {
-	passports := parse(utils.Load("04-real").String())
+	passports := parse(utils.Load(2020, "04-real").String())
 	numValid := 0
 	for _, p := range passports {
 		if p.isValid() {

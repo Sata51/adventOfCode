@@ -20,7 +20,7 @@ func main() {
 		{right: 1, down: 2},
 	}
 
-	data := utils.Load("03-real")
+	data := utils.Load(2020, "03-real")
 	row := data.ToStringSlice()
 
 	multipliedResults := 1

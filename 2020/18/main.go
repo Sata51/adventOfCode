@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	input := utils.Load("real").ToStringSlice()
+	input := utils.Load(2020, "18-real").ToStringSlice()
 
 	fmt.Println("-----Part 1-----")
 	fmt.Println("Sum of expression: ", evaluateSum(input, part1))

@@ -333,7 +333,7 @@ func (l *Life) countOccupied() int {
 }
 
 func main() {
-	lines := utils.Load("11-real").ToStringSlice()
+	lines := utils.Load(2020, "11-real").ToStringSlice()
 	l := NewLife(lines)
 	hasChange := true
 	for hasChange {

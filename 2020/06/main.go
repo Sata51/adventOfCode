@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	yes := parseInput(utils.Load("06-real").String())
+	yes := parseInput(utils.Load(2020, "06-real").String())
 	fmt.Printf("yes in input: %d\n", yes)
 }
 

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -17,8 +18,8 @@ type Data struct {
 }
 
 //Load file
-func Load(filename string) Data {
-	dat, err := ioutil.ReadFile(filename)
+func Load(year int, filename string) Data {
+	dat, err := ioutil.ReadFile(fmt.Sprintf("../../input/%d/%s", year, filename))
 	panicError(err)
 	return Data{content: dat}
 }

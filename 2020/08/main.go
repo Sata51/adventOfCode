@@ -23,7 +23,7 @@ type operation struct {
 }
 
 func main() {
-	instructions := parse(utils.Load("08-real").ToStringSlice())
+	instructions := parse(utils.Load(2020, "08-real").ToStringSlice())
 
 	fmt.Println(instructions)
 
@@ -31,7 +31,7 @@ func main() {
 
 	fmt.Println(number)
 
-	processedAcc := testSequence(utils.Load("08-real").ToStringSlice())
+	processedAcc := testSequence(utils.Load(2020, "08-real").ToStringSlice())
 	fmt.Println(processedAcc)
 
 }

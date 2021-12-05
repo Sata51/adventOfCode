@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	data := utils.Load("real").ToStringSlice()
+	data := utils.Load(2020, "14-real").ToStringSlice()
 
 	fmt.Println(part1(data))
 	fmt.Println(part2(data))
