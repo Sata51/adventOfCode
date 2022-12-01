@@ -30,12 +30,7 @@ impl Resolver {
     }
 
     pub fn resolve(&self) {
-        println!(
-            "Working on Day: {}, Part: {}, Input: {}",
-            self.day,
-            self.part,
-            self.input.len()
-        );
+        println!("Working on Day: {}, Part: {}", self.day, self.part);
 
         let challenge = Challenge::new(self.day, self.part);
         let resolver = self.resolver.get(&challenge).unwrap();
