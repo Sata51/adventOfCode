@@ -140,21 +140,17 @@ impl Game {
 // If draw add 3
 // If win add 6
 
-pub struct D2P1;
-pub struct D2P2;
+pub struct Solver;
 
-impl ChallengeResolver for D2P1 {
-    fn handle(&self, input: String) {
+impl ChallengeResolver for Solver {
+    fn solve1(&self, input: String) {
         let mut total = 0;
         for c in get_rounds(input) {
             total += c.get_round_points();
         }
         println!("{:?} ", total);
     }
-}
-
-impl ChallengeResolver for D2P2 {
-    fn handle(&self, input: String) {
+    fn solve2(&self, input: String) {
         let mut total = 0;
         for mut c in get_rounds(input) {
             total += c.get_rounds_points_for_expected_result();

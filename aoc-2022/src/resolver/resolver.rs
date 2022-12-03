@@ -1,28 +1,24 @@
 use std::collections::HashMap;
+use std::iter::Map;
 
-use super::challenge::{Challenge, ChallengeResolver};
+use super::challenge::ChallengeResolver;
 
-use super::day::{D1P1, D1P2, D2P1, D2P2, D3P1, D3P2};
+use super::day::{Solver1, Solver2, Solver3, Solver4};
 
 pub struct Resolver {
     day: u8,
     part: u8,
     input: String,
-    resolver: HashMap<Challenge, Box<dyn ChallengeResolver>>,
+    resolver: HashMap<u8, Box<dyn ChallengeResolver>>,
 }
 
 impl Resolver {
     pub fn new(day: u8, part: u8, input: String) -> Resolver {
-        let mut resolvers: HashMap<Challenge, Box<dyn ChallengeResolver>> = HashMap::new();
-        // Day 1
-        resolvers.insert(Challenge::new(1, 1), Box::new(D1P1));
-        resolvers.insert(Challenge::new(1, 2), Box::new(D1P2));
-        // Day 2
-        resolvers.insert(Challenge::new(2, 1), Box::new(D2P1));
-        resolvers.insert(Challenge::new(2, 2), Box::new(D2P2));
-        // Day 3
-        resolvers.insert(Challenge::new(3, 1), Box::new(D3P1));
-        resolvers.insert(Challenge::new(3, 2), Box::new(D3P2));
+        let mut resolvers: HashMap<u8, Box<dyn ChallengeResolver>> = HashMap::new();
+        resolvers.insert(1, Box::new(Solver1));
+        resolvers.insert(2, Box::new(Solver2));
+        resolvers.insert(3, Box::new(Solver3));
+        resolvers.insert(4, Box::new(Solver4));
 
         Resolver {
             day,
@@ -35,9 +31,15 @@ impl Resolver {
     pub fn resolve(&self) {
         println!("Working on Day: {}, Part: {}", self.day, self.part);
 
-        let challenge = Challenge::new(self.day, self.part);
-        let resolver = self.resolver.get(&challenge).unwrap();
+        let resolver = self
+            .resolver
+            .get(&self.day)
+            .expect(format!("No resolver found for day {}", self.day).as_str());
 
-        resolver.handle(self.input.clone());
+        match self.part {
+            1 => resolver.solve1(self.input.clone()),
+            2 => resolver.solve2(self.input.clone()),
+            _ => panic!("No resolver found for part {}", self.part),
+        }
     }
 }
