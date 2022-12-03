@@ -1,10 +1,8 @@
 use std::str::Split;
 
-use itertools::{IntoChunks, Itertools};
-
 use crate::resolver::challenge::ChallengeResolver;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 enum RPS {
     Rock,
     Paper,
@@ -51,19 +49,19 @@ impl Game {
         }
     }
 
-    fn new_from_str(my_choice: &str, opponent_choice: &str) -> Game {
+    fn new_from_str(opponent_choice: &str, my_choice: &str) -> Game {
         let my_choice = match my_choice {
             "X" => RPS::Rock,
             "Y" => RPS::Paper,
             "Z" => RPS::Scissors,
-            _ => panic!("Invalid choice"),
+            _ => panic!("Invalid choice m:{:?}", my_choice),
         };
 
         let opponent_choice = match opponent_choice {
             "A" => RPS::Rock,
             "B" => RPS::Paper,
             "C" => RPS::Scissors,
-            _ => panic!("Invalid choice"),
+            _ => panic!("Invalid choice o:{:?}", opponent_choice),
         };
 
         Game {
@@ -98,6 +96,43 @@ impl Game {
     fn get_round_points(&self) -> i32 {
         return self.get_result().to_int() + self.MyChoice.to_int();
     }
+
+    fn get_rounds_points_for_expected_result(&mut self) -> i32 {
+        // Mychoice will be updated based on the expected result
+        // "X" => RPS::Rock, but means "I expect to lose"
+        // "Y" => RPS::Paper, but means "I expect to draw"
+        // "Z" => RPS::Scissors, but means "I expect to win"
+
+        if self.MyChoice == RPS::Paper {
+            print!("Draw expected, ");
+            self.MyChoice = self.OpponentChoice.clone(); // Draw
+            return self.get_round_points(); // Get the new result
+        }
+
+        if self.MyChoice == RPS::Rock {
+            print!("Loose expected, ");
+            // I need to loose so i get the choice based on the opponent choice
+            self.MyChoice = match self.OpponentChoice {
+                RPS::Rock => RPS::Scissors,
+                RPS::Paper => RPS::Rock,
+                RPS::Scissors => RPS::Paper,
+            }; // Lose
+            return self.get_round_points(); // Get the new result
+        }
+
+        if self.MyChoice == RPS::Scissors {
+            print!("Win expected, ");
+            // I need to win so i get the choice based on the opponent choice
+            self.MyChoice = match self.OpponentChoice {
+                RPS::Rock => RPS::Paper,
+                RPS::Paper => RPS::Scissors,
+                RPS::Scissors => RPS::Rock,
+            }; // Win
+            return self.get_round_points(); // Get the new result
+        }
+
+        return self.get_round_points();
+    }
 }
 
 // Oponent value
@@ -119,47 +154,19 @@ pub struct D2P2;
 
 impl ChallengeResolver for D2P1 {
     fn handle(&self, input: String) {
-        let mut my_value = RPS::Rock;
-        let mut oponent_value = RPS::Rock;
         let mut total = 0;
-        for c in input.chars() {
-            let mut roundValue = 0;
-            let mut roundResult = RPSResult::Draw;
-            match c {
-                'A' => {
-                    oponent_value = RPS::Rock;
-                }
-                'B' => {
-                    oponent_value = RPS::Paper;
-                }
-                'C' => {
-                    oponent_value = RPS::Scissors;
-                }
-                'X' => {
-                    my_value = RPS::Rock;
-                }
-                'Y' => {
-                    my_value = RPS::Paper;
-                }
-                'Z' => {
-                    my_value = RPS::Scissors;
-                }
-                _ => {}
-            }
-            if my_value == oponent_value {
-                roundResult = RPSResult::Draw;
-            } else if my_value == RPS::Rock && oponent_value == RPS::Scissors {
-                roundResult = RPSResult::Win;
-            } else if my_value == RPS::Paper && oponent_value == RPS::Rock {
-                roundResult = RPSResult::Win;
-            } else if my_value == RPS::Scissors && oponent_value == RPS::Paper {
-                roundResult = RPSResult::Win;
-            } else {
-                roundResult = RPSResult::Lose;
-            }
+        for c in get_rounds(input) {
+            total += c.get_round_points();
+        }
+        println!("{:?} ", total);
+    }
+}
 
-            total += roundResult.to_int();
-            total += my_value.to_int();
+impl ChallengeResolver for D2P2 {
+    fn handle(&self, input: String) {
+        let mut total = 0;
+        for mut c in get_rounds(input) {
+            total += c.get_rounds_points_for_expected_result();
 
             println!("{:?} ", total);
         }
@@ -167,20 +174,16 @@ impl ChallengeResolver for D2P1 {
     }
 }
 
-impl ChallengeResolver for D2P2 {
-    fn handle(&self, input: String) {}
-}
-
 fn get_rounds(input: String) -> Vec<Game> {
     return input
-        .split("\n\n")
+        .split("\n")
+        .filter(|line| line.len() > 0)
         .map(|game| {
-            game.split(" ")
-                .chunks(2)
-                .into_iter()
-                .map(|p| Game::new_from_str(p[0], p[1]))
-                .collect()
+            // For every line, split it into two parts
+            let mut parts = game.split(" ");
+            let my_choice = parts.next().unwrap();
+            let opponent_choice = parts.next().unwrap();
+            return Game::new_from_str(my_choice, opponent_choice);
         })
-        .flatten()
         .collect();
 }

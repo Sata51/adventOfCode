@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::challenge::{Challenge, ChallengeResolver};
 
-use super::day::{D1P1, D1P2, D2P1, D2P2};
+use super::day::{D1P1, D1P2, D2P1, D2P2, D3P1, D3P2};
 
 pub struct Resolver {
     day: u8,
@@ -20,6 +20,9 @@ impl Resolver {
         // Day 2
         resolvers.insert(Challenge::new(2, 1), Box::new(D2P1));
         resolvers.insert(Challenge::new(2, 2), Box::new(D2P2));
+        // Day 3
+        resolvers.insert(Challenge::new(3, 1), Box::new(D3P1));
+        resolvers.insert(Challenge::new(3, 2), Box::new(D3P2));
 
         Resolver {
             day,
