@@ -1,5 +1,3 @@
-use std::str::Split;
-
 use crate::resolver::challenge::ChallengeResolver;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -37,18 +35,11 @@ impl RPSResult {
 }
 
 struct Game {
-    MyChoice: RPS,
-    OpponentChoice: RPS,
+    my_choice: RPS,
+    opponent_choice: RPS,
 }
 
 impl Game {
-    fn new(my_choice: RPS, opponent_choice: RPS) -> Game {
-        Game {
-            MyChoice: my_choice,
-            OpponentChoice: opponent_choice,
-        }
-    }
-
     fn new_from_str(opponent_choice: &str, my_choice: &str) -> Game {
         let my_choice = match my_choice {
             "X" => RPS::Rock,
@@ -65,14 +56,14 @@ impl Game {
         };
 
         Game {
-            MyChoice: my_choice,
-            OpponentChoice: opponent_choice,
+            my_choice,
+            opponent_choice,
         }
     }
 
     fn get_result(&self) -> RPSResult {
-        let my_choice = self.MyChoice.to_int();
-        let opponent_choice = self.OpponentChoice.to_int();
+        let my_choice = self.my_choice.to_int();
+        let opponent_choice = self.opponent_choice.to_int();
 
         if my_choice == opponent_choice {
             return RPSResult::Draw;
@@ -94,7 +85,7 @@ impl Game {
     }
 
     fn get_round_points(&self) -> i32 {
-        return self.get_result().to_int() + self.MyChoice.to_int();
+        return self.get_result().to_int() + self.my_choice.to_int();
     }
 
     fn get_rounds_points_for_expected_result(&mut self) -> i32 {
@@ -103,16 +94,16 @@ impl Game {
         // "Y" => RPS::Paper, but means "I expect to draw"
         // "Z" => RPS::Scissors, but means "I expect to win"
 
-        if self.MyChoice == RPS::Paper {
+        if self.my_choice == RPS::Paper {
             print!("Draw expected, ");
-            self.MyChoice = self.OpponentChoice.clone(); // Draw
+            self.my_choice = self.opponent_choice.clone(); // Draw
             return self.get_round_points(); // Get the new result
         }
 
-        if self.MyChoice == RPS::Rock {
+        if self.my_choice == RPS::Rock {
             print!("Loose expected, ");
             // I need to loose so i get the choice based on the opponent choice
-            self.MyChoice = match self.OpponentChoice {
+            self.my_choice = match self.opponent_choice {
                 RPS::Rock => RPS::Scissors,
                 RPS::Paper => RPS::Rock,
                 RPS::Scissors => RPS::Paper,
@@ -120,10 +111,10 @@ impl Game {
             return self.get_round_points(); // Get the new result
         }
 
-        if self.MyChoice == RPS::Scissors {
+        if self.my_choice == RPS::Scissors {
             print!("Win expected, ");
             // I need to win so i get the choice based on the opponent choice
-            self.MyChoice = match self.OpponentChoice {
+            self.my_choice = match self.opponent_choice {
                 RPS::Rock => RPS::Paper,
                 RPS::Paper => RPS::Scissors,
                 RPS::Scissors => RPS::Rock,
@@ -135,7 +126,7 @@ impl Game {
     }
 }
 
-// Oponent value
+// Opponent value
 // A for Rock
 // B for Paper
 // C for Scissors
