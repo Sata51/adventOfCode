@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 use crate::resolver::challenge::ChallengeResolver;
 
 pub struct Solver;
