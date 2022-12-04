@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-use std::iter::Map;
 
 use super::challenge::ChallengeResolver;
 
-use super::day::{Solver1, Solver2, Solver3, Solver4};
+use super::day::{Solver1, Solver2, Solver3, Solver4, Solver5};
 
 pub struct Resolver {
     day: u8,
@@ -19,6 +18,7 @@ impl Resolver {
         resolvers.insert(2, Box::new(Solver2));
         resolvers.insert(3, Box::new(Solver3));
         resolvers.insert(4, Box::new(Solver4));
+        resolvers.insert(5, Box::new(Solver5));
 
         Resolver {
             day,
