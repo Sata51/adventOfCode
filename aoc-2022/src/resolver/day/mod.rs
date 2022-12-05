@@ -1,3 +1,5 @@
+#![allow(unused_variables)]
+
 mod r01;
 mod r02;
 mod r03;
