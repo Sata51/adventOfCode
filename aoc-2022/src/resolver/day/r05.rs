@@ -13,7 +13,7 @@ impl ChallengeResolver for Solver {
         let moves = parse_moves(operations);
 
         // Execute moves
-        stacks = execute_move_by_one(stacks, moves);
+        stacks = execute_move(stacks, moves, false);
 
         print_last_of_stack(stacks);
     }
@@ -24,7 +24,7 @@ impl ChallengeResolver for Solver {
         let moves = parse_moves(operations);
 
         // Execute moves
-        stacks = execute_all_move_at_once(stacks, moves);
+        stacks = execute_move(stacks, moves, true);
 
         print_last_of_stack(stacks);
     }
@@ -47,16 +47,15 @@ fn split_input(input: String) -> (String, String) {
 
 fn parse_moves(input: String) -> Vec<Move> {
     let mut moves = Vec::new();
-    // move instruct have form
-    // move 1 from 2 to 1
     let re = Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
     for line in input.lines() {
         let caps = re.captures(line).unwrap();
-        let quantity = caps.get(1).unwrap().as_str().parse::<u32>().unwrap();
-        let from = caps.get(2).unwrap().as_str().parse::<u32>().unwrap();
-        let to = caps.get(3).unwrap().as_str().parse::<u32>().unwrap();
 
-        moves.push(Move { quantity, from, to });
+        moves.push(Move {
+            quantity: caps.get(1).unwrap().as_str().parse::<u32>().unwrap(),
+            from: caps.get(2).unwrap().as_str().parse::<u32>().unwrap(),
+            to: caps.get(3).unwrap().as_str().parse::<u32>().unwrap(),
+        });
     }
     return moves;
 }
@@ -94,71 +93,37 @@ fn parse_stacks(input: String) -> HashMap<u32, Vec<char>> {
     // Start from the bottom, skip the last line
     for line in input.lines().rev().skip(1) {
         let mut stack_index = 0;
-        // Remove every %4 char
-        let mut new_char_line: Vec<char> = Vec::new();
-        for (i, c) in line.chars().enumerate() {
-            if (i + 1) % 4 == 0 {
-                continue;
+        line.chars().skip(1).step_by(4).for_each(|c| {
+            if c != ' ' {
+                stacks.get_mut(&stack_keys[stack_index]).unwrap().push(c);
             }
-            new_char_line.push(c);
-        }
-
-        for w in new_char_line.chunks(3) {
-            // If the 3 chars whitespace, we are on an empty stack, skip it
-            if w[0] == ' ' && w[1] == ' ' && w[2] == ' ' {
-                stack_index += 1;
-                continue;
-            }
-            // If the first char is a [ we are on a stack
-            if w[0] == '[' {
-                stacks.get_mut(&stack_keys[stack_index]).unwrap().push(w[1]);
-                // Increment the stack index
-                stack_index += 1;
-            }
-        }
+            stack_index += 1;
+        });
     }
 
     return stacks;
 }
 
-fn execute_move_by_one(
+fn execute_move(
     stack: HashMap<u32, Vec<char>>,
     moves: Vec<Move>,
+    at_once: bool,
 ) -> HashMap<u32, Vec<char>> {
     // Copy the stack
     let mut stack = stack;
     for m in moves {
         // get the quantity of crates from the from stack
-        let crates = stack.get(&m.from).unwrap().clone();
-        let crates_to_move = crates[crates.len() - m.quantity as usize..].to_vec();
-        // Reverse the crates to move
-        let crates_to_move = crates_to_move.into_iter().rev().collect::<Vec<char>>();
-        // remove the crates from the from stack
         let from_stack = stack.get_mut(&m.from).unwrap();
+        let crates_to_move = from_stack[from_stack.len() - m.quantity as usize..].to_vec();
+        // remove the crates from the from stack
         from_stack.truncate(from_stack.len() - m.quantity as usize);
         // add the crates to the to stack
         let to_stack = stack.get_mut(&m.to).unwrap();
-        to_stack.append(&mut crates_to_move.clone());
-    }
-    return stack;
-}
-
-fn execute_all_move_at_once(
-    stack: HashMap<u32, Vec<char>>,
-    moves: Vec<Move>,
-) -> HashMap<u32, Vec<char>> {
-    // Copy the stack
-    let mut stack = stack;
-    for m in moves {
-        // get the quantity of crates from the from stack
-        let crates = stack.get(&m.from).unwrap().clone();
-        let crates_to_move = crates[crates.len() - m.quantity as usize..].to_vec();
-        // remove the crates from the from stack
-        let from_stack = stack.get_mut(&m.from).unwrap();
-        from_stack.truncate(from_stack.len() - m.quantity as usize);
-        // add the crates to the to stack
-        let to_stack = stack.get_mut(&m.to).unwrap();
-        to_stack.append(&mut crates_to_move.clone());
+        if at_once {
+            to_stack.append(&mut crates_to_move.clone());
+        } else {
+            to_stack.append(&mut crates_to_move.clone().into_iter().rev().collect());
+        }
     }
     return stack;
 }
