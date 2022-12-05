@@ -12,3 +12,4 @@ rand={version = "0.8.5"}
 rayon={version = "1.6.0"}
 array_tool={version = "1.0.3"}
 regex={version = "1.7.0"}
+lazy_static={version = "1.4.0"}

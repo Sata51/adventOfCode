@@ -2,7 +2,12 @@ use std::collections::HashMap;
 
 use crate::resolver::challenge::ChallengeResolver;
 use itertools::Itertools;
+use lazy_static::lazy_static;
 use regex::Regex;
+
+lazy_static! {
+    static ref REM: Regex = Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
+}
 
 pub struct Solver;
 
@@ -32,9 +37,20 @@ impl ChallengeResolver for Solver {
 
 #[derive(Debug)]
 struct Move {
-    quantity: u32,
-    from: u32,
-    to: u32,
+    quantity: usize,
+    from: usize,
+    to: usize,
+}
+
+impl Move {
+    fn from_line(line: &str) -> Move {
+        let caps = REM.captures(line).unwrap();
+        Move {
+            quantity: caps.get(1).unwrap().as_str().parse::<usize>().unwrap(),
+            from: caps.get(2).unwrap().as_str().parse::<usize>().unwrap(),
+            to: caps.get(3).unwrap().as_str().parse::<usize>().unwrap(),
+        }
+    }
 }
 
 fn split_input(input: String) -> (String, String) {
@@ -46,18 +62,10 @@ fn split_input(input: String) -> (String, String) {
 }
 
 fn parse_moves(input: String) -> Vec<Move> {
-    let mut moves = Vec::new();
-    let re = Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
-    for line in input.lines() {
-        let caps = re.captures(line).unwrap();
-
-        moves.push(Move {
-            quantity: caps.get(1).unwrap().as_str().parse::<u32>().unwrap(),
-            from: caps.get(2).unwrap().as_str().parse::<u32>().unwrap(),
-            to: caps.get(3).unwrap().as_str().parse::<u32>().unwrap(),
-        });
-    }
-    return moves;
+    return input
+        .lines()
+        .map(|line| Move::from_line(line))
+        .collect::<Vec<_>>();
 }
 
 fn parse_stacks(input: String) -> HashMap<u32, Vec<char>> {
@@ -75,10 +83,11 @@ fn parse_stacks(input: String) -> HashMap<u32, Vec<char>> {
 
     // We are starting from the bottom of the stack
     // and going up
-    let lines = input.lines();
     // The last line will help us to get the key for the hashmap
-    let last_line = lines.last().unwrap();
-    let stack_keys = last_line
+    let stack_keys = input
+        .lines()
+        .last()
+        .unwrap()
         .trim()
         .split_ascii_whitespace()
         .collect::<Vec<&str>>()
@@ -113,12 +122,12 @@ fn execute_move(
     let mut stack = stack;
     for m in moves {
         // get the quantity of crates from the from stack
-        let from_stack = stack.get_mut(&m.from).unwrap();
+        let from_stack = stack.get_mut(&(m.from as u32)).unwrap();
         let crates_to_move = from_stack[from_stack.len() - m.quantity as usize..].to_vec();
         // remove the crates from the from stack
         from_stack.truncate(from_stack.len() - m.quantity as usize);
         // add the crates to the to stack
-        let to_stack = stack.get_mut(&m.to).unwrap();
+        let to_stack = stack.get_mut(&(m.to as u32)).unwrap();
         if at_once {
             to_stack.append(&mut crates_to_move.clone());
         } else {
