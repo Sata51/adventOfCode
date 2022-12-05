@@ -11,3 +11,4 @@ itertools={version = "0.10.5"}
 rand={version = "0.8.5"}
 rayon={version = "1.6.0"}
 array_tool={version = "1.0.3"}
+regex={version = "1.7.0"}
