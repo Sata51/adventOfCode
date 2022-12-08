@@ -1,20 +1,16 @@
+use std::collections::HashSet;
+
 use crate::resolver::challenge::ChallengeResolver;
 
 pub struct Solver;
 
 impl ChallengeResolver for Solver {
     fn solve1(&self, input: String) {
-        let tree_map = parse_trees(&input);
-        println!("{:?}", tree_map);
-
-        let visible_from_outside = count_exteriors(&tree_map);
-        println!("Visible from outside: {}", visible_from_outside);
-        let visible_from_inside = count_interiors(&tree_map);
-        println!("Visible from inside: {}", visible_from_inside);
-
-        println!("Total: {}", visible_from_outside + visible_from_inside);
+        println!("Visible: {}", count_visible(&parse_trees(&input)));
     }
-    fn solve2(&self, input: String) {}
+    fn solve2(&self, input: String) {
+        println!("Scenic score: {}", get_scenic_score(&parse_trees(&input)));
+    }
 }
 
 fn parse_trees(input: &str) -> Vec<Vec<usize>> {
@@ -28,75 +24,81 @@ fn parse_trees(input: &str) -> Vec<Vec<usize>> {
         .collect()
 }
 
-fn count_exteriors(tree_map: &Vec<Vec<usize>>) -> usize {
-    let mut visible_from_outside = 0;
-    // The first and last line are always visible
-    // The first and last column are always visible
-    visible_from_outside += tree_map[0].len();
-    visible_from_outside += tree_map[tree_map.len() - 1].len();
-    visible_from_outside += (tree_map.len() - 2) * 2;
+fn count_visible(tree_map: &Vec<Vec<usize>>) -> usize {
+    let mut h: HashSet<(usize, usize)> = HashSet::new();
 
-    visible_from_outside
-}
-
-fn count_interiors(tree_map: &Vec<Vec<usize>>) -> usize {
-    let mut visible_from_inside = 0;
-
-    // Do not count the first and last line
-    // Do not count the first and last column
-    for y in 1..tree_map.len() - 1 {
-        for x in 1..tree_map[0].len() - 1 {
-            if is_tree_visible(tree_map, x, y) {
-                println!("{}x{} is visible", x, y);
-                visible_from_inside += 1;
+    for y in 0..tree_map.len() {
+        for x in 0..tree_map[0].len() {
+            // Exteriors
+            if x == 0 || x == tree_map[0].len() - 1 || y == 0 || y == tree_map.len() - 1 {
+                h.insert((x, y));
             } else {
-                println!("{}x{} is not visible", x, y);
+                // We are in the interior
+                let left = tree_map[y][0..x].iter().copied().rev().collect::<Vec<_>>();
+                let right = tree_map[y][x + 1..tree_map[0].len()].to_vec();
+
+                let top = tree_map[0..y].iter().map(|r| r[x]).collect::<Vec<_>>();
+                let bottom = tree_map[y + 1..tree_map.len()]
+                    .iter()
+                    .map(|r| r[x])
+                    .collect::<Vec<_>>();
+
+                // visible from one direction
+                if left.iter().all(|h| *h < tree_map[y][x])
+                    || right.iter().all(|h| *h < tree_map[y][x])
+                    || top.iter().all(|h| *h < tree_map[y][x])
+                    || bottom.iter().all(|h| *h < tree_map[y][x])
+                {
+                    h.insert((x, y));
+                }
             }
         }
     }
 
-    visible_from_inside
+    h.len()
 }
 
-fn is_tree_visible(tree_map: &Vec<Vec<usize>>, x: usize, y: usize) -> bool {
-    let height_at_index = tree_map[y][x];
+fn get_tree_scenic_score(value: usize, direction: &Vec<usize>) -> usize {
+    let mut score = 0;
+    for v in direction {
+        if value > *v {
+            score += 1;
+        } else {
+            return score + 1;
+        }
+    }
+    score
+}
 
-    // Collect the 4 directions in 4 vectors
-    let mut from_top = tree_map.iter().map(|v| v[x]).collect::<Vec<_>>();
-    let mut from_bottom = from_top.clone().into_iter().rev().collect::<Vec<_>>();
+fn get_scenic_score(tree_map: &Vec<Vec<usize>>) -> usize {
+    let mut score: Vec<Vec<usize>> = Vec::new();
 
-    from_top.truncate(x);
-    from_bottom.truncate(from_bottom.len() - x - 1);
+    for y in 0..tree_map.len() {
+        let mut tmp_score: Vec<usize> = Vec::new();
+        for x in 0..tree_map[0].len() {
+            let left = tree_map[y][0..x].iter().copied().rev().collect::<Vec<_>>();
+            let right = tree_map[y][x + 1..tree_map[0].len()].to_vec();
 
-    let visible_from_top = from_top.iter().all(|&h| h < height_at_index);
-    let visible_from_bottom = from_bottom.iter().all(|&h| h < height_at_index);
+            let top = tree_map[0..y]
+                .iter()
+                .map(|r| r[x])
+                .rev()
+                .collect::<Vec<_>>();
+            let bottom = tree_map[y + 1..tree_map.len()]
+                .iter()
+                .map(|r| r[x])
+                .collect::<Vec<_>>();
 
-    let mut from_left = tree_map[y].clone();
-    let mut from_right = from_left.clone().into_iter().rev().collect::<Vec<_>>();
+            tmp_score.push(
+                get_tree_scenic_score(tree_map[y][x], &right)
+                    * get_tree_scenic_score(tree_map[y][x], &left)
+                    * get_tree_scenic_score(tree_map[y][x], &top)
+                    * get_tree_scenic_score(tree_map[y][x], &bottom),
+            );
+        }
 
-    from_left.truncate(x);
-    from_right.truncate(from_right.len() - x - 1);
+        score.push(tmp_score);
+    }
 
-    let visible_from_left = from_left.iter().all(|&h| h < height_at_index);
-    let visible_from_right = from_right.iter().all(|&h| h < height_at_index);
-
-    println!(
-        "{}x{}:
-        from_top: {:?} - visible_from_top {}
-        from_bottom: {:?} - visible_from_bottom {}
-        from_left: {:?} - visible_from_left {}
-        from_right: {:?} - visible_from_right {}",
-        x,
-        y,
-        from_top,
-        visible_from_top,
-        from_bottom,
-        visible_from_bottom,
-        from_left,
-        visible_from_left,
-        from_right,
-        visible_from_right
-    );
-
-    return visible_from_top || visible_from_bottom || visible_from_left || visible_from_right;
+    *score.iter().map(|r| r.iter().max().unwrap()).max().unwrap()
 }
