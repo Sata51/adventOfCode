@@ -1,8 +1,27 @@
 use std::collections::HashSet;
 
+use itertools::Itertools;
+
 use crate::resolver::challenge::ChallengeResolver;
 
 pub struct Solver;
+
+impl ChallengeResolver for Solver {
+    fn solve1(&self, input: String) {
+        let mut rp = Rope::new(1);
+        for _move in parse_moves(input) {
+            rp.handle_move(_move);
+        }
+        println!("tail_visited: {:?}", rp.tail_visited.len());
+    }
+    fn solve2(&self, input: String) {
+        let mut rp = Rope::new(9);
+        for _move in parse_moves(input) {
+            rp.handle_move(_move);
+        }
+        println!("tail_visited: {:?}", rp.tail_visited.len());
+    }
+}
 
 #[derive(Debug)]
 enum Direction {
@@ -18,52 +37,74 @@ struct Move {
     distance: i32,
 }
 
-impl ChallengeResolver for Solver {
-    fn solve1(&self, input: String) {
-        let moves = parse_moves(input);
-        println!("{:?}", moves);
+impl Move {
+    fn from_line(s: &str) -> Move {
+        let instructions = s.split_ascii_whitespace().collect::<Vec<&str>>();
+        Move {
+            direction: Direction::from_char(instructions[0].chars().next().unwrap()),
+            distance: instructions[1].parse::<i32>().unwrap(),
+        }
+    }
+}
 
-        let mut tail: (i32, i32) = (0, 0);
-        let mut head: (i32, i32) = (0, 0);
-        let mut tail_visited: HashSet<(i32, i32)> = HashSet::from([(0, 0)]);
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
+struct RopeElement {
+    x: i32,
+    y: i32,
+}
 
-        // At the start of each move, the tail is the head of the previous move
-        // The tail does not move, if the head is not far enough away from the tail (distance < 2)
-        // Also diagonally
+impl RopeElement {
+    fn new() -> RopeElement {
+        RopeElement { x: 0, y: 0 }
+    }
+}
 
-        for move_ in moves {
-            for _ in 0..move_.distance {
-                let (tail_x, tail_y) = tail;
-                let (head_x, head_y) = head;
+struct Rope {
+    parts: Vec<RopeElement>,
+    tail_visited: HashSet<RopeElement>,
+}
 
-                match move_.direction {
-                    Direction::Right => {
-                        head = (head_x + 1, head_y);
-                    }
-                    Direction::Left => {
-                        head = (head_x - 1, head_y);
-                    }
-                    Direction::Up => {
-                        head = (head_x, head_y + 1);
-                    }
-                    Direction::Down => {
-                        head = (head_x, head_y - 1);
-                    }
-                }
+impl Rope {
+    fn new(knots: i32) -> Rope {
+        let mut parts = Vec::from([RopeElement::new()]);
+        for _ in 0..knots {
+            parts.push(RopeElement::new());
+        }
+        Rope {
+            parts,
+            tail_visited: HashSet::from([RopeElement::new()]), // Insert the origin
+        }
+    }
 
-                if !is_touching(tail, head) {
-                    tail = (head_x, head_y); // Move the tail to the head before the move
-                    tail_visited.insert(tail);
-                }
+    fn handle_move(&mut self, move_: Move) {
+        for _ in 0..move_.distance {
+            // Move the head
+            match move_.direction {
+                Direction::Right => self.parts[0].x += 1,
+                Direction::Left => self.parts[0].x -= 1,
+                Direction::Up => self.parts[0].y += 1,
+                Direction::Down => self.parts[0].y -= 1,
             }
 
-            println!("tail: {:?}, head: {:?}", tail, head);
+            // Iterate over the tails
+            for (head_id, tail_id) in (0..self.parts.len()).tuple_windows() {
+                let diff = RopeElement {
+                    x: self.parts[head_id].x - self.parts[tail_id].x,
+                    y: self.parts[head_id].y - self.parts[tail_id].y,
+                };
+
+                let should_move = diff.x.abs() > 1 || diff.y.abs() > 1;
+
+                if should_move {
+                    self.parts[tail_id].x += diff.x.signum();
+                    self.parts[tail_id].y += diff.y.signum();
+                    if tail_id == self.parts.len() - 1 {
+                        self.tail_visited.insert(self.parts[self.parts.len() - 1]);
+                    }
+                }
+            }
         }
-        tail_visited.insert(tail);
-        println!("tail_visited: {:?}", tail_visited);
-        println!("tail_visited: {:?}", tail_visited.len());
     }
-    fn solve2(&self, input: String) {}
 }
 
 impl Direction {
@@ -81,32 +122,7 @@ impl Direction {
 fn parse_moves(input: String) -> Vec<Move> {
     let moves = input
         .lines()
-        .map(|line| {
-            let instructions = line.split_ascii_whitespace().collect::<Vec<&str>>();
-            let direction = instructions[0].chars().next().unwrap();
-            let distance = instructions[1].parse::<i32>().unwrap();
-            Move {
-                direction: Direction::from_char(direction),
-                distance,
-            }
-        })
+        .map(|line| Move::from_line(line))
         .collect::<Vec<Move>>();
     return moves;
-}
-
-fn is_touching(tail: (i32, i32), head: (i32, i32)) -> bool {
-    let (head_x, head_y) = head;
-    let around: HashSet<(i32, i32)> = HashSet::from([
-        (head_x, head_y),         // No move
-        (head_x, head_y + 1),     //up
-        (head_x, head_y - 1),     //down
-        (head_x + 1, head_y),     //right
-        (head_x - 1, head_y),     //left
-        (head_x + 1, head_y + 1), //up right
-        (head_x - 1, head_y - 1), //down left
-        (head_x - 1, head_y + 1), //up left
-        (head_x + 1, head_y - 1), //down right
-    ]);
-
-    around.contains(&tail)
 }
